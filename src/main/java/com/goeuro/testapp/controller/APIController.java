@@ -1,5 +1,6 @@
 package com.goeuro.testapp.controller;
 
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.client.ResourceAccessException;
 
 import com.goeuro.testapp.model.CityInfo;
 import com.goeuro.testapp.service.ConsumeAPIService;
@@ -36,33 +38,76 @@ public class APIController {
     @Value("${goeuro.cityinfo.saveresponse.error}")
     private String invalidFileWriteResponse;
 
+    @Value("${goeuro.cityinfo.api.connection.error}")
+    private String connectionErrorMessage;
+
+    @Value("${goeuro.cityinfo.openfile.error}")
+    private String fileNotFoundErrorMessage;
+
+    @Value("${goeuro.cityinfo.inputcity.info.notfound}")
+    private String cityInfoNotFound;
+    
+    
+	/**
+	 * @param city {@link String}
+	 * @throws Exception {@link Exception}
+	 */
 	public void consumeAPI(String city) throws Exception{
 		if(!isValidCity(city)){
+		    // send response to user
+		    System.out.println(invalidCityName);
+		    // log response to file
+		    logger.warn(invalidCityName);
 		    
-		    logger.error(invalidCityName);
-		        return;
 		}else{
 		    
 		    List<CityInfo> cityInfo = null;
 		    try{
+		        // get response from api
 		        cityInfo = consumeAPIService.getCityInfo(city);
-		    }catch(Exception ex){
 		        
-	            logger.error(invalidServiceResponse);
-	               return;
+		        if(cityInfo.isEmpty()){
+		            // send response to user
+		            System.out.println(cityInfo);
+		            // log response to file
+		            logger.warn(cityInfoNotFound);
+		            return;
+		        }
+		        
+		    }catch(ResourceAccessException ex){
+                handleException(ex, connectionErrorMessage);
+                return;
+		    }catch(Exception ex){
+                handleException(ex, invalidServiceResponse);
+                return;
 		    }
 
 	        try{
+	            // save response to file
 	            fileWriterService.saveCityInfo(cityInfo);
-	        }catch(Exception ex){
-	            
-	            logger.error(invalidFileWriteResponse);
-	               return;
+	        }catch(FileNotFoundException ex){
+                handleException(ex, fileNotFoundErrorMessage);
+                return;
+            }catch(Exception ex){
+                handleException(ex, invalidFileWriteResponse);
 	        }
-			
 		}
 	}
 
+    /**
+     * @param ex {@link Exception}
+     * @param message {@link String}
+     */
+    private void handleException(Exception ex, String message) {
+        System.out.println(message);
+        
+        logger.error("Exception occured  "+ex);
+    }
+
+	/**
+	 * @param city {@link String}
+	 * @return {@link Boolean}
+	 */
 	private boolean isValidCity(String city) {
 		
 		Pattern pattern = Pattern.compile("[^a-z ]", Pattern.CASE_INSENSITIVE);

@@ -2,6 +2,7 @@
 <configuration scan="true">
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    
         <file>application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover. Make sure the path matches the one in the file element or else
@@ -21,7 +22,8 @@
         </encoder>
     </appender>
 
-    <root level="DEBUG">
-        <appender-ref ref="FILE"/>
-    </root>
+<root level="info">
+		<appender-ref ref="FILE" />
+</root>
+	        
 </configuration>

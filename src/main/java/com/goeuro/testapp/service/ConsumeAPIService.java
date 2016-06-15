@@ -1,5 +1,6 @@
 package com.goeuro.testapp.service;
 
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,7 +22,14 @@ public class ConsumeAPIService {
 	 @Value("${goeuro.cityinfo.api}")
 	    private String cityInfoApi;
 	 
-	public List<CityInfo> getCityInfo(String city){
+	/**
+	 * Get response from api.
+	 * 
+	 * @param city {@link String}
+	 * @return {@link List}
+	 * @throws UnknownHostException
+	 */
+	public List<CityInfo> getCityInfo(String city) throws UnknownHostException{
 		
 	    CityInfo[] result = restTemplate.getForObject(cityInfoApi+city, CityInfo[].class);
 	    return Arrays.asList(result);
