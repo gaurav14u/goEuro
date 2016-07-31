@@ -68,7 +68,7 @@ public class APIController {
 		        
 		        if(cityInfo.isEmpty()){
 		            // send response to user
-		            System.out.println(cityInfo);
+		            System.out.println(cityInfoNotFound);
 		            // log response to file
 		            logger.warn(cityInfoNotFound);
 		            return;
